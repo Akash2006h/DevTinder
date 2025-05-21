@@ -1,20 +1,40 @@
-const express = require("express");
-const app = express();
-const PORT = process.env.PORT || 1234;
-const {adminAuth, userAuthorization} = require("./utils/auth")
-app.use("/admin", adminAuth);
+const express = require("express")
+const app = express()
+const PORT = process.env.PORT || 1234
+const connectDB = require("./config/database.js")
+const User  = require("./models/user.js")
+app.use("/signup",  async (req, res) => {
+  try{
+    const user = new User({
+      firstName: "Aditya",
+      lastName: "karki",
+      emailId: "aditya@gmail.com",
+      password: "password",
+  })
+   await user.save(); 
+   res.send("user saved succesfully")  
+  }
+  catch(err){
+    console.error("erron on the server", err.message);
+  }
+})
 
-app.get("/admin/getAllData", (req, res) => {
-  res.send("Heroo")
+
+
+
+
+
+
+
+
+connectDB()
+.then(()=>{
+  console.log("Database connetion established")
+  app.listen(PORT, () => {
+    console.log(`Server running at: http://localhost:${PORT}`)
+  });
 })
-app.use("/Aka", (req, res) => {
-  res.send("yooo ")
-})
-app.use("/user", userAuthorization)
-app.use("/user/access", (req, res, next) => {
-  res.send("hello")
+  .catch((err) => {
+    console.error("Database cannot be connected", err.message);
 })
 
-app.listen(PORT, () => {
-  console.log(`http://localhost:${PORT}`)
-})
