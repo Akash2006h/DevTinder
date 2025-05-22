@@ -7,6 +7,65 @@ app.use(express.json())
 
 
 
+app.patch("/user", async (req, res) => {
+  const emailId = req.body.emailId;
+  const data = req.body;
+  try {
+    const users = await User.findOneAndUpdate({emailId: emailId}, data)
+
+    if(!users){
+      res.status(404).send("No users")
+    }
+    else{
+      res.send(users)
+    }
+    
+  } catch (err) {
+    res.status(404).send("errors", err.message)
+  }
+})
+
+
+app.get("/byid", async (req, res) => {
+  const id = req.body.id
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).send("No User")
+    }else{
+      res.send(user)
+    }
+    
+  } catch (err) {
+    res.status(404).send("something is wrong with try catch for /byid")
+    
+  }
+
+
+  
+})
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+   const user = await User.findByIdAndDelete(userId)
+    
+    if(!user){
+      res.status(404).send("user not found")
+    }
+    else{
+
+      res.send("user is deleted",user)
+    }
+    } catch (err) {
+    res.status(404).send("user not found", err.message
+   )
+    
+  }
+});
+
+
+
 
 app.get("/user", async (req, res) => {
   const UserEmail = req.body.emailId;
@@ -19,8 +78,8 @@ app.get("/user", async (req, res) => {
           res.send(users)
     }
   }
-  catch(err) {
-    console.error("User not found", err.message);    
+  catch{
+    console.error("User not found");    
   }
 })
 
