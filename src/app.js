@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 1234
 const connectDB = require("./config/database.js")
 const User  = require("./models/user.js")
 app.use(express.json())
-
+require('dotenv').config({path: './config/myenv.env'})
 
 
 app.patch("/user", async (req, res) => {
