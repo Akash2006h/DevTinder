@@ -27,7 +27,7 @@ app.patch("/user", async (req, res) => {
 
 
 app.get("/byid", async (req, res) => {
-  const id = req.body.id
+  const id = req.query.id
   try {
     const user = await User.findById(id);
     if (!user) {
@@ -68,7 +68,7 @@ app.delete("/user", async (req, res) => {
 
 
 app.get("/user", async (req, res) => {
-  const UserEmail = req.body.emailId;
+  const UserEmail = req.query.emailId;
   try{
     const users = await User.find({emailId: UserEmail})
     if(users.length == 0){
