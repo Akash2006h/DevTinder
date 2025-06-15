@@ -11,7 +11,10 @@ app.patch("/user", async (req, res) => {
   const emailId = req.body.emailId;
   const data = req.body;
   try {
-    const users = await User.findOneAndUpdate({emailId: emailId}, data)
+    const users = await User.findOneAndUpdate({emailId: emailId}, data, {
+      returnDocument: "after",
+      runValidators: "true",
+    })
 
     if(!users){
       res.status(404).send("No users")
@@ -21,7 +24,7 @@ app.patch("/user", async (req, res) => {
     }
     
   } catch (err) {
-    res.status(404).send("errors", err.message)
+    res.status(404).send("errors" + err.message)
   }
 })
 
