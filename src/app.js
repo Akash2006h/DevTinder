@@ -6,12 +6,21 @@ const User  = require("./models/user.js")
 app.use(express.json())
 require('dotenv').config({path: './config/myenv.env'})
 
-
 app.patch("/user", async (req, res) => {
   const emailId = req.body.emailId;
   const data = req.body;
+  try{
+    const ALLOWED_UPDATES = ["firstName", "lastName", "age", "about", "skills"]
+    const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
+    if(!isUpdateAllowed) {
+      throw new Error("Update Not Allowed" + Error)
+    }
+  }
+  catch (err){
+     res.status(404).send("errors" + err.message)
+  }
   try {
-    const users = await User.findOneAndUpdate({emailId: emailId}, data, {
+    const users = await User.findByIdAndUpdate({emailId: emailId}, data, {
       returnDocument: "after",
       runValidators: "true",
     })
@@ -24,15 +33,20 @@ app.patch("/user", async (req, res) => {
     }
     
   } catch (err) {
-    res.status(404).send("errors" + err.message)
+        res.status(404).send("errors" + err.message)
+
   }
 })
 
 
+
+
+
 app.get("/byid", async (req, res) => {
   const id = req.query.id
+
   try {
-    const user = await User.findById(id);
+    const user = await User.findByIdAndUpdate(id);
     if (!user) {
       res.status(404).send("No User")
     }else{
@@ -45,8 +59,8 @@ app.get("/byid", async (req, res) => {
   }
 
 
-  
 })
+
 
 app.delete("/user", async (req, res) => {
   const userId = req.body.userId;
