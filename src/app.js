@@ -3,8 +3,64 @@ const app = express()
 const PORT = process.env.PORT || 1234
 const connectDB = require("./config/database.js")
 const User  = require("./models/user.js")
+const {validateSignUp} = require("./utils/validation.js")
+const bcrypt = require("bcrypt");
 app.use(express.json())
 require('dotenv').config({path: './config/myenv.env'})
+app.post("/signup", async (req, res) => {
+
+
+try{
+  validateSignUp(req)
+  const {firstName, lastName, emailId, password} = req.body;
+  const passwordHash = await bcrypt.hash(password, 10);
+  console.log(passwordHash)
+
+  const user = new User({
+    firstName,
+    lastName,
+    emailId,
+    password: passwordHash,
+  });
+  
+    
+    const savedUser = await user.save();
+    console.log("Saved user:", savedUser); // Debug log
+}
+    catch (err) {
+      console.error("Error during message:", err)
+      res.status(400).send("Error Saving The Message." + err.message)
+    }
+  
+
+
+})
+app.post("/login", async(req, res) => {
+  try {
+    console.log('Received request body:', req.body);
+    const {emailId, password} = req.body
+    const user = await User.findOne({emailId: emailId});
+    if(!user) {
+      throw new Error ("Email id is not present")
+    }
+    if(!password || !user.password){
+      console.log("Check password and Hash password")
+      throw new Error("password is not present")
+    }
+    const isPasswordIsValid = await bcrypt.compare(password, user.password);
+    if(isPasswordIsValid) {
+      res.status(200).json({message: "Login Succesfully"})
+    }
+    else{
+      throw new Error("password is Invalid");
+    }
+
+
+
+  }catch (err) {
+    res.status(400).send("ERROR :" +err.message)
+  }
+})
 
 app.patch("/user", async (req, res) => {
   const emailId = req.body.emailId;
@@ -115,17 +171,6 @@ app.get("/feed", async(req, res) => {
 
 
 
-app.post("/signup",  async (req, res) => {
-  console.log(req.body)
-  try{
-    const user = new User(req.body)
-   await user.save(); 
-   res.send("user saved succesfully")  
-  }
-  catch(err){
-    console.error("erron on the server", err.message);
-  }
-})
 
 connectDB()
 .then(()=>{

@@ -11,6 +11,6 @@ const validateSignUp = (req) => {
     throw new error("Please Enter A Strong password")
   } 
 }
-module.export = {
+module.exports = {
   validateSignUp,
 }
