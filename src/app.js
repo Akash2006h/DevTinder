@@ -5,7 +5,11 @@ const connectDB = require("./config/database.js")
 const User  = require("./models/user.js")
 const {validateSignUp} = require("./utils/validation.js")
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser")
+const jwt = require("jsonwebtoken")
 app.use(express.json())
+//middleware
+app.use(cookieParser())
 require('dotenv').config({path: './config/myenv.env'})
 app.post("/signup", async (req, res) => {
 
@@ -22,10 +26,29 @@ try{
     emailId,
     password: passwordHash,
   });
+
+
   
     
-    const savedUser = await user.save();
-    console.log("Saved user:", savedUser); // Debug log
+  const savedUser = await user.save(); 
+
+  const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+    );
+
+
+  res.cookie("userId", user._id.toString(),{
+  httpOnly: true,
+  secure: false
+  })
+
+  res.status(201).send({ message: "User created successfully" });
+
+
+
+    
 }
     catch (err) {
       console.error("Error during message:", err)
@@ -47,7 +70,25 @@ app.post("/login", async(req, res) => {
       console.log("Check password and Hash password")
       throw new Error("password is not present")
     }
+
     const isPasswordIsValid = await bcrypt.compare(password, user.password);
+    
+    
+    // ✅ Generate JWT
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+    );
+
+    res.cookie("userId", user._id.toString(), {
+    httpOnly: true,
+    secure: false, 
+    });
+
+
+
+    
     if(isPasswordIsValid) {
       res.status(200).json({message: "Login Succesfully"})
     }
@@ -59,7 +100,12 @@ app.post("/login", async(req, res) => {
 
   }catch (err) {
     res.status(400).send("ERROR :" +err.message)
-  }
+  } 
+})
+app.get("/profile", async(req, res) => {
+  const cookies = req.cookies;
+  console.log(cookies);
+  res.send("Dummy")
 })
 
 app.patch("/user", async (req, res) => {
