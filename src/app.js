@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 1234
 const connectDB = require("./config/database.js")
 const User  = require("./models/user.js")
 const {validateSignUp} = require("./utils/validation.js")
+const { userAuth } = require("./utils/auth.js")
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser")
 const jwt = require("jsonwebtoken")
@@ -39,20 +40,16 @@ try{
     );
 
 
-  res.cookie("userId", user._id.toString(),{
+  res.cookie("token",token ,{
   httpOnly: true,
   secure: false
   })
 
   res.status(201).send({ message: "User created successfully" });
-
-
-
-    
 }
     catch (err) {
       console.error("Error during message:", err)
-      res.status(400).send("Error Saving The Message." + err.message)
+      res.status(400).send("Error Saving The Message.")
     }
   
 
@@ -75,13 +72,9 @@ app.post("/login", async(req, res) => {
     
     
     // ✅ Generate JWT
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-    );
+   const token = await user.getJWT();
 
-    res.cookie("userId", user._id.toString(), {
+    res.cookie("token", token, {
     httpOnly: true,
     secure: false, 
     });
@@ -102,10 +95,11 @@ app.post("/login", async(req, res) => {
     res.status(400).send("ERROR :" +err.message)
   } 
 })
-app.get("/profile", async(req, res) => {
-  const cookies = req.cookies;
-  console.log(cookies);
-  res.send("Dummy")
+app.get("/profile",userAuth , async(req, res) => {
+  const user = req.user;
+
+  res.send(user)
+ 
 })
 
 app.patch("/user", async (req, res) => {
