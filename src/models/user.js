@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 const validator = require ("validator")
+const jwt = require ("jwt")
 
 const  {Schema} =  mongoose
 const userSchema = new Schema({
@@ -64,6 +65,7 @@ userSchema.methods.getJWT = async function () {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
+  return token ; 
   
 }
 
